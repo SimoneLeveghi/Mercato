@@ -1,14 +1,12 @@
-import java.util.concurrent.Semaphore;
-
 public class Produttore implements Runnable {
     private int quintaliProduzione;
     private int tempoProduzione;
-    private Semaphore pieno;
-    private Semaphore vuoto;
-    private Semaphore denaroM;
-    private Semaphore contenutoM;
+    private Semaforo pieno;
+    private Semaforo vuoto;
+    private Semaforo denaroM;
+    private Semaforo contenutoM;
 
-    public Produttore(int quintaliProduzione, int tempoProduzione, Semaphore pieno, Semaphore vuoto, Semaphore contenutoM, Semaphore denaroM) {
+    public Produttore(int quintaliProduzione, int tempoProduzione, Semaforo pieno, Semaforo vuoto, Semaforo contenutoM, Semaforo denaroM) {
         this.quintaliProduzione = quintaliProduzione;
         this.tempoProduzione = tempoProduzione;
         this.pieno = pieno;
@@ -20,20 +18,22 @@ public class Produttore implements Runnable {
     @Override
     public void run() {
         while(true) {
-            vuoto.acquireUninterruptibly(quintaliProduzione);
-            contenutoM.acquireUninterruptibly();
+            vuoto.P(quintaliProduzione);
+            contenutoM.P();
             Main.contenuto += quintaliProduzione;
-            contenutoM.release();
-            denaroM.acquireUninterruptibly();
-            Main.denaro -= Main.pV;
-            denaroM.release();
-            System.out.println(Thread.currentThread().getName() + " ha prodotto " + this.quintaliProduzione + " per " + Main.pV);
+            System.out.println("Contenuto: " + Main.contenuto);
+            contenutoM.V();
+            denaroM.P();
+            Main.denaro -= Main.pV*quintaliProduzione;
+            System.out.println("Denaro: " + Main.denaro);
+            denaroM.V();
+            pieno.V(quintaliProduzione);
+            System.out.println(Thread.currentThread().getName() + " ha prodotto " + this.quintaliProduzione + " per " + (Main.pV*this.quintaliProduzione));
             try {
                 Thread.sleep(tempoProduzione);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            pieno.release(quintaliProduzione);
         }
     }
 }

@@ -1,15 +1,13 @@
-import java.util.concurrent.Semaphore;
-
 public class Grossista implements Runnable{
 
     private int nAcquisto;
     private int tempoEsaurimento;
-    private Semaphore pieno;
-    private Semaphore vuoto;
-    private Semaphore denaroM;
-    private Semaphore contenutoM;
+    private Semaforo pieno;
+    private Semaforo vuoto;
+    private Semaforo denaroM;
+    private Semaforo contenutoM;
 
-    public Grossista(int nAcquisto, int tempoEsaurimento, Semaphore pieno, Semaphore vuoto, Semaphore contenutoM, Semaphore denaroM) {
+    public Grossista(int nAcquisto, int tempoEsaurimento, Semaforo pieno, Semaforo vuoto, Semaforo contenutoM, Semaforo denaroM) {
         this.nAcquisto = nAcquisto;
         this.tempoEsaurimento = tempoEsaurimento;
         this.pieno = pieno;
@@ -23,19 +21,19 @@ public class Grossista implements Runnable{
         String s = "";
         while(true){
             s="Il venditore " + Thread.currentThread().getName() + " ha pagato " + nAcquisto*Main.pV + " denari per " + nAcquisto + " quintali di ciliegie";
-            pieno.acquireUninterruptibly(nAcquisto);
+            pieno.P(nAcquisto);
 
-            denaroM.acquireUninterruptibly();
-            Main.denaro+=nAcquisto*Main.pV;
-            System.out.println("Contenuto: " + Main.denaro);
-            denaroM.release();
+            denaroM.P();
+            Main.denaro+=nAcquisto*Main.pA;
+            System.out.println("Denaro: " + Main.denaro);
+            denaroM.V();
 
-            contenutoM.acquireUninterruptibly();
+            contenutoM.P();
             Main.contenuto-=nAcquisto;
             System.out.println("Contenuto: " + Main.contenuto);
-            contenutoM.release();
+            contenutoM.V();
 
-            vuoto.release(nAcquisto);
+            vuoto.V(nAcquisto);
 
             System.out.println(s);
 
